@@ -14,6 +14,7 @@ from datetime import datetime, timedelta
 from flask import Flask, send_from_directory, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
+import paypalrestsdk
 
 app = Flask(__name__, static_folder=os.path.join(os.path.dirname(__file__), 'static'))
 app.config['SECRET_KEY'] = 'black-sultan-os-secret-key-2024'
@@ -21,6 +22,11 @@ CORS(app, origins="*")
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 # PayPal Configuration
+paypalrestsdk.configure({
+    "mode": "sandbox",  # Change to "live" for production
+    "client_id": os.environ.get('PAYPAL_CLIENT_ID', 'ATUUVEAgA_xDrjL2CtpoB...'),
+    "client_secret": os.environ.get('PAYPAL_CLIENT_SECRET', 'EAe6zjBCq4TS3R4cGmRlCIG90IoBsphZ8eoD9Wmg0brh2ssYfJ0CoLxE02CFoqsc1xQjof1kKyeCmRNr')
+})
 
 # Enhanced Bot System with Real Logic
 class TradingBot:
@@ -287,6 +293,44 @@ class EnhancedCryptoProvider:
 
 crypto_provider = EnhancedCryptoProvider()
 
+# PayPal Integration Functions
+def create_paypal_payout(email, amount, currency='USD'):
+    """Create a PayPal payout to user's email"""
+    try:
+        payout = paypalrestsdk.Payout({
+            "sender_batch_header": {
+                "sender_batch_id": f"batch_{int(time.time())}",
+                "email_subject": "Black Sultan OS - Withdrawal Payout"
+            },
+            "items": [{
+                "recipient_type": "EMAIL",
+                "amount": {
+                    "value": str(amount),
+                    "currency": currency
+                },
+                "receiver": email,
+                "note": f"Withdrawal from Black Sultan OS Trading Platform",
+                "sender_item_id": f"item_{int(time.time())}"
+            }]
+        })
+        
+        if payout.create():
+            return {
+                'success': True,
+                'payout_batch_id': payout.batch_header.payout_batch_id,
+                'status': payout.batch_header.batch_status
+            }
+        else:
+            return {
+                'success': False,
+                'error': payout.error
+            }
+    except Exception as e:
+        return {
+            'success': False,
+            'error': str(e)
+        }
+
 # Routes
 @app.route('/')
 def serve_frontend():
@@ -338,18 +382,24 @@ def withdraw_paypal():
     if not email:
         return jsonify({'success': False, 'error': 'Email required for PayPal withdrawal'}), 400
     
-    # Simulate PayPal payout
-    payout_batch_id = f'PAYPAL_{random.randint(1000000, 9999999)}'
+    # Create PayPal payout
+    payout_result = create_paypal_payout(email, amount)
     
-    return jsonify({
-        'success': True,
-        'payout_batch_id': payout_batch_id,
-        'status': 'PENDING',
-        'amount': amount,
-        'email': email,
-        'processing_time': '1-3 business days',
-        'message': f'PayPal payout of ${amount} initiated to {email}'
-    })
+    if payout_result['success']:
+        return jsonify({
+            'success': True,
+            'payout_batch_id': payout_result['payout_batch_id'],
+            'status': payout_result['status'],
+            'amount': amount,
+            'email': email,
+            'processing_time': '1-3 business days',
+            'message': f'PayPal payout of ${amount} initiated to {email}'
+        })
+    else:
+        return jsonify({
+            'success': False,
+            'error': payout_result['error']
+        }), 500
 
 @app.route('/api/wallet/withdraw', methods=['POST'])
 def withdraw():
