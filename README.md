@@ -29,6 +29,7 @@ A comprehensive, autonomous trading system with **real-time data integration**, 
 - **WebSocket Updates**: 30-second refresh cycles for all data
 - **System Monitoring**: CPU, Memory, Network usage tracking
 - **Performance Charts**: Interactive visualizations with Recharts
+- **Night Mode Indicator**: 🌙 Automatic detection and display of night trading hours (20:00 - 06:00)
 
 ### 🎨 **Professional UI/UX**
 - **Modern Design**: Dark theme with gradient effects and animations
@@ -156,7 +157,7 @@ docker run -p 5000:5000 black-sultan-os
 ## 📊 API Endpoints
 
 ### Trading Operations
-- `GET /api/dashboard` - Portfolio overview
+- `GET /api/dashboard` - Portfolio overview (includes `is_night_mode` and `night_status` for time-of-day context)
 - `GET /api/bots` - Bot status and performance
 - `POST /api/bots/{id}/toggle` - Start/pause bots
 
