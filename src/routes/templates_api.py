@@ -7,6 +7,9 @@ from flask import Blueprint, jsonify, request
 from templates.american_market import AmericanMarketTemplate
 from templates.trading_strategies import TradingStrategyTemplates
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 templates_api_bp = Blueprint('templates_api', __name__)
 
@@ -48,9 +51,10 @@ def get_american_market_status():
             'timestamp': datetime.now().isoformat()
         })
     except Exception as e:
+        logger.error(f"Error in get_american_market_status: {str(e)}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Internal server error while fetching market status'
         }), 500
 
 
@@ -68,9 +72,10 @@ def get_american_bot_templates():
             'timestamp': datetime.now().isoformat()
         })
     except Exception as e:
+        logger.error(f"Error in get_american_bot_templates: {str(e)}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Internal server error while fetching bot templates'
         }), 500
 
 
@@ -85,9 +90,10 @@ def get_american_crypto_template():
             'timestamp': datetime.now().isoformat()
         })
     except Exception as e:
+        logger.error(f"Error in get_american_crypto_template: {str(e)}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Internal server error while fetching crypto template'
         }), 500
 
 
@@ -105,9 +111,10 @@ def get_all_strategies():
             'timestamp': datetime.now().isoformat()
         })
     except Exception as e:
+        logger.error(f"Error in get_all_strategies: {str(e)}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Internal server error while fetching strategies list'
         }), 500
 
 
@@ -129,9 +136,10 @@ def get_strategy_details(strategy_name):
             'timestamp': datetime.now().isoformat()
         })
     except Exception as e:
+        logger.error(f"Error in get_strategy_details: {str(e)}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Internal server error while fetching strategy details'
         }), 500
 
 
@@ -146,9 +154,10 @@ def get_strategy_comparison():
             'timestamp': datetime.now().isoformat()
         })
     except Exception as e:
+        logger.error(f"Error in get_strategy_comparison: {str(e)}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Internal server error while comparing strategies'
         }), 500
 
 
@@ -202,9 +211,10 @@ def search_templates():
             'timestamp': datetime.now().isoformat()
         })
     except Exception as e:
+        logger.error(f"Error in search_templates: {str(e)}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Internal server error while searching templates'
         }), 500
 
 
@@ -274,7 +284,8 @@ def get_recommended_templates():
             'timestamp': datetime.now().isoformat()
         })
     except Exception as e:
+        logger.error(f"Error in get_recommended_templates: {str(e)}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Internal server error while getting recommendations'
         }), 500
