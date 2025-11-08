@@ -292,6 +292,11 @@ def api_status():
 def dashboard_data():
     market_data = get_market_data()
     
+    # Check if it's night time (20:00 - 06:00)
+    current_hour = datetime.now().hour
+    is_night_mode = current_hour >= 20 or current_hour < 6
+    night_status = "🌙 Night Trading Active" if is_night_mode else "☀️ Day Trading Active"
+    
     return jsonify({
         'portfolio_value': game_state.portfolio_value,
         'daily_profit': game_state.daily_profit,
@@ -300,6 +305,8 @@ def dashboard_data():
         'user_xp': game_state.user_xp,
         'streak_days': game_state.streak_days,
         'market_data': market_data,
+        'is_night_mode': is_night_mode,
+        'night_status': night_status,
         'system_metrics': {
             'cpu_usage': random.randint(15, 45),
             'memory_usage': random.randint(60, 85),
