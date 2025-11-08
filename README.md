@@ -30,6 +30,13 @@ A comprehensive, autonomous trading system with **real-time data integration**, 
 - **System Monitoring**: CPU, Memory, Network usage tracking
 - **Performance Charts**: Interactive visualizations with Recharts
 
+### 📋 **Trading Templates**
+- **American Market Support**: Full US market hours, regulations, and compliance
+- **Strategy Templates**: 8 pre-configured trading strategies (scalping, day trading, swing, etc.)
+- **Bot Configuration**: Ready-to-use bot templates for different risk levels
+- **Market Status**: Real-time US market open/close status with timezone support
+- **Personalized Recommendations**: Strategy suggestions based on capital and experience
+
 ### 🎨 **Professional UI/UX**
 - **Modern Design**: Dark theme with gradient effects and animations
 - **Responsive Layout**: Optimized for desktop, tablet, and mobile
@@ -169,6 +176,16 @@ docker run -p 5000:5000 black-sultan-os
 - `POST /api/gamification/spin-wheel` - Spin wheel game
 - `GET /api/gamification/status` - User level and XP
 - `POST /api/gamification/scratch-card` - Scratch card game
+
+### Trading Templates (New!)
+- `GET /api/templates/markets/american` - American market configuration
+- `GET /api/templates/markets/american/status` - Current US market status
+- `GET /api/templates/bots/american` - American market bot templates
+- `GET /api/templates/bots/american/crypto` - US-compliant crypto trading
+- `GET /api/templates/strategies` - List all trading strategies
+- `GET /api/templates/strategies/{name}` - Detailed strategy configuration
+- `GET /api/templates/strategies/comparison` - Compare strategies
+- `GET /api/templates/recommended` - Get personalized recommendations
 
 ## 🎯 Future Roadmap
 
