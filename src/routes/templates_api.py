@@ -34,9 +34,10 @@ def get_american_market_config():
             }
         })
     except Exception as e:
+        logger.error(f"Error in get_american_market_config: {str(e)}")
         return jsonify({
             'success': False,
-            'error': str(e)
+            'error': 'Internal server error while fetching market configuration'
         }), 500
 
 
