@@ -59,6 +59,44 @@ A comprehensive, autonomous trading system with **real-time data integration**, 
 - **CORS**: Cross-origin resource sharing
 - **Environment Variables**: Secure configuration management
 
+## 📁 Project Structure
+
+```
+black-sultan-os-professional/
+├── src/                          # Source code
+│   ├── config/                   # Configuration management
+│   │   ├── __init__.py
+│   │   └── settings.py          # Application settings
+│   ├── models/                   # Database models
+│   │   ├── __init__.py
+│   │   └── user.py              # User model
+│   ├── routes/                   # API routes/blueprints
+│   │   ├── __init__.py
+│   │   ├── crypto_api.py        # Cryptocurrency API endpoints
+│   │   └── user.py              # User management endpoints
+│   ├── services/                 # Business logic layer
+│   │   ├── __init__.py
+│   │   ├── game_state.py        # Game state management
+│   │   ├── gamification.py      # Gamification engine
+│   │   ├── paypal_integration.py # PayPal payment processing
+│   │   └── trading_bot.py       # Trading bot logic
+│   ├── utils/                    # Utility functions
+│   │   ├── __init__.py
+│   │   └── market_data.py       # Market data utilities
+│   ├── database/                 # Database files
+│   │   ├── .gitkeep
+│   │   └── README.md
+│   ├── static/                   # Frontend static files
+│   │   ├── assets/
+│   │   ├── index.html
+│   │   └── favicon.ico
+│   ├── __init__.py
+│   └── main.py                   # Application entry point
+├── requirements.txt              # Python dependencies
+├── .gitignore                    # Git ignore rules
+└── README.md                     # This file
+```
+
 ## 🚀 Quick Start
 
 ### Prerequisites

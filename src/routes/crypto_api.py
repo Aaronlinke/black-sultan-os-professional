@@ -1,9 +1,11 @@
-import requests
+"""Cryptocurrency API routes for price data and market information."""
+import json
+import threading
 import time
 from datetime import datetime, timedelta
-from flask import Blueprint, jsonify
-import threading
-import json
+
+import requests
+from flask import Blueprint, jsonify, request
 
 crypto_api_bp = Blueprint('crypto_api', __name__)
 
