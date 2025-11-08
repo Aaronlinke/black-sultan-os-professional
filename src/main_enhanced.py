@@ -9,7 +9,6 @@ import time
 import threading
 import random
 import requests
-import json
 from datetime import datetime, timedelta
 from flask import Flask, send_from_directory, jsonify, request
 from flask_cors import CORS
@@ -101,7 +100,7 @@ class TradingBot:
         
         return None
     
-    def _alpha_strategy(self, market_data):
+    def _alpha_strategy(self, _market_data):
         """High-frequency trading with advanced algorithms"""
         # Simulate alpha trading logic
         if random.random() > 0.7:  # 30% chance to trade
@@ -110,14 +109,14 @@ class TradingBot:
             return {'symbol': symbol, 'action': action, 'confidence': 0.85}
         return None
     
-    def _arbitrage_strategy(self, market_data):
+    def _arbitrage_strategy(self, _market_data):
         """Cross-exchange arbitrage opportunities"""
         if random.random() > 0.8:  # 20% chance to find arbitrage
             symbol = random.choice(['BTC', 'ETH'])
             return {'symbol': symbol, 'action': 'arbitrage', 'confidence': 0.92}
         return None
     
-    def _trend_strategy(self, market_data):
+    def _trend_strategy(self, _market_data):
         """Momentum-based trading strategies"""
         if random.random() > 0.6:  # 40% chance to follow trend
             symbol = random.choice(['BTC', 'ETH', 'BNB'])
@@ -125,7 +124,7 @@ class TradingBot:
             return {'symbol': symbol, 'action': action, 'confidence': 0.75}
         return None
     
-    def _risk_strategy(self, market_data):
+    def _risk_strategy(self, _market_data):
         """Portfolio risk assessment and management"""
         if random.random() > 0.9:  # 10% chance for risk management action
             symbol = 'BTC'  # Focus on BTC for risk management
@@ -133,7 +132,7 @@ class TradingBot:
             return {'symbol': symbol, 'action': action, 'confidence': 0.95}
         return None
     
-    def _market_maker_strategy(self, market_data):
+    def _market_maker_strategy(self, _market_data):
         """Liquidity provision and spread capture"""
         if random.random() > 0.75:  # 25% chance to provide liquidity
             symbol = random.choice(['ETH', 'BNB'])
@@ -141,7 +140,7 @@ class TradingBot:
             return {'symbol': symbol, 'action': action, 'confidence': 0.80}
         return None
     
-    def _calculate_profit(self, trade_signal, amount, market_data):
+    def _calculate_profit(self, trade_signal, amount, _market_data):
         """Calculate realistic profit based on strategy and market conditions"""
         base_profit = amount * 0.02  # 2% base return
         
@@ -278,7 +277,7 @@ class EnhancedCryptoProvider:
         
         # Fallback to simulated prices with enhanced data
         prices = {}
-        for coin, base_price in self.base_prices.items():
+        for coin in self.base_prices:
             change = random.uniform(-0.05, 0.05)
             new_price = self.last_prices[coin] * (1 + change)
             prices[coin] = {
@@ -309,7 +308,7 @@ def create_paypal_payout(email, amount, currency='USD'):
                     "currency": currency
                 },
                 "receiver": email,
-                "note": f"Withdrawal from Black Sultan OS Trading Platform",
+                "note": "Withdrawal from Black Sultan OS Trading Platform",
                 "sender_item_id": f"item_{int(time.time())}"
             }]
         })
