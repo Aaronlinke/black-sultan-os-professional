@@ -5,17 +5,15 @@ Version: 2.0.0 - Production Ready with Interactive Elements
 """
 
 import os
-import json
 import time
 import random
 import threading
 from datetime import datetime, timedelta
-from flask import Flask, render_template, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
-import requests
 import logging
-from typing import Dict, List, Optional
+from typing import Dict
 import uuid
 
 # Configure logging
@@ -165,7 +163,7 @@ class PayPalIntegration:
             'created_at': datetime.now().isoformat()
         }
         
-        logger.info(f"PayPal payout created: {payout_id} for ${amount} to {recipient_email}")
+        logger.info("PayPal payout created: %s for $%s to %s", payout_id, amount, recipient_email)
         return payout_response
 
 paypal = PayPalIntegration()
@@ -455,7 +453,7 @@ def trading_simulation():
             socketio.emit('dashboard_update', dashboard_update)
             
         except Exception as e:
-            logger.error(f"Trading simulation error: {e}")
+            logger.error("Trading simulation error: %s", e)
         
         time.sleep(30)  # Update every 30 seconds
 
@@ -477,7 +475,7 @@ def reset_daily_limits():
                 logger.info("Daily limits reset")
                 
         except Exception as e:
-            logger.error(f"Daily reset error: {e}")
+            logger.error("Daily reset error: %s", e)
         
         time.sleep(60)  # Check every minute
 
