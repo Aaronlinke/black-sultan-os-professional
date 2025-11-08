@@ -27,6 +27,10 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'black-sultan-secret-key
 socketio = SocketIO(app, cors_allowed_origins="*")
 CORS(app)
 
+# Register blueprints
+from routes.templates_api import templates_api_bp
+app.register_blueprint(templates_api_bp, url_prefix='/api')
+
 # Global state management
 class GameState:
     def __init__(self):
