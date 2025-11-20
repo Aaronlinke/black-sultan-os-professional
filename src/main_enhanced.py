@@ -226,7 +226,7 @@ class EnhancedCryptoProvider:
     def get_current_prices(self):
         """Get real-time prices with enhanced market data"""
         try:
-            response = requests.get(
+            api_response = requests.get(
                 'https://api.coingecko.com/api/v3/simple/price',
                 params={
                     'ids': 'bitcoin,ethereum,binancecoin',
@@ -238,58 +238,58 @@ class EnhancedCryptoProvider:
                 timeout=5
             )
             
-            if response.status_code == 200:
-                data = response.json()
-                prices = {
+            if api_response.status_code == 200:
+                api_price_data = api_response.json()
+                formatted_prices = {
                     'btc': {
-                        'price': data.get('bitcoin', {}).get('usd', self.base_prices['btc']),
-                        'change_24h': data.get('bitcoin', {}).get('usd_24h_change', 0),
-                        'volume_24h': data.get('bitcoin', {}).get('usd_24h_vol', 0),
-                        'market_cap': data.get('bitcoin', {}).get('usd_market_cap', 0)
+                        'price': api_price_data.get('bitcoin', {}).get('usd', self.base_prices['btc']),
+                        'change_24h': api_price_data.get('bitcoin', {}).get('usd_24h_change', 0),
+                        'volume_24h': api_price_data.get('bitcoin', {}).get('usd_24h_vol', 0),
+                        'market_cap': api_price_data.get('bitcoin', {}).get('usd_market_cap', 0)
                     },
                     'eth': {
-                        'price': data.get('ethereum', {}).get('usd', self.base_prices['eth']),
-                        'change_24h': data.get('ethereum', {}).get('usd_24h_change', 0),
-                        'volume_24h': data.get('ethereum', {}).get('usd_24h_vol', 0),
-                        'market_cap': data.get('ethereum', {}).get('usd_market_cap', 0)
+                        'price': api_price_data.get('ethereum', {}).get('usd', self.base_prices['eth']),
+                        'change_24h': api_price_data.get('ethereum', {}).get('usd_24h_change', 0),
+                        'volume_24h': api_price_data.get('ethereum', {}).get('usd_24h_vol', 0),
+                        'market_cap': api_price_data.get('ethereum', {}).get('usd_market_cap', 0)
                     },
                     'bnb': {
-                        'price': data.get('binancecoin', {}).get('usd', self.base_prices['bnb']),
-                        'change_24h': data.get('binancecoin', {}).get('usd_24h_change', 0),
-                        'volume_24h': data.get('binancecoin', {}).get('usd_24h_vol', 0),
-                        'market_cap': data.get('binancecoin', {}).get('usd_market_cap', 0)
+                        'price': api_price_data.get('binancecoin', {}).get('usd', self.base_prices['bnb']),
+                        'change_24h': api_price_data.get('binancecoin', {}).get('usd_24h_change', 0),
+                        'volume_24h': api_price_data.get('binancecoin', {}).get('usd_24h_vol', 0),
+                        'market_cap': api_price_data.get('binancecoin', {}).get('usd_market_cap', 0)
                     }
                 }
                 
                 # Update price history
                 self.price_history.append({
                     'timestamp': datetime.now().isoformat(),
-                    'prices': prices
+                    'prices': formatted_prices
                 })
                 
                 # Keep only last 1000 price points
                 if len(self.price_history) > 1000:
                     self.price_history = self.price_history[-1000:]
                 
-                self.last_prices = {k: v['price'] for k, v in prices.items()}
-                return prices
-        except Exception as e:
-            print(f"Error fetching real prices: {e}")
+                self.last_prices = {coin_symbol: price_info['price'] for coin_symbol, price_info in formatted_prices.items()}
+                return formatted_prices
+        except Exception as price_fetch_error:
+            print(f"Error fetching real prices: {price_fetch_error}")
         
         # Fallback to simulated prices with enhanced data
-        prices = {}
-        for coin, base_price in self.base_prices.items():
-            change = random.uniform(-0.05, 0.05)
-            new_price = self.last_prices[coin] * (1 + change)
-            prices[coin] = {
-                'price': new_price,
+        simulated_prices = {}
+        for coin_symbol, base_price in self.base_prices.items():
+            price_change_percentage = random.uniform(-0.05, 0.05)
+            updated_price = self.last_prices[coin_symbol] * (1 + price_change_percentage)
+            simulated_prices[coin_symbol] = {
+                'price': updated_price,
                 'change_24h': random.uniform(-10, 10),
                 'volume_24h': random.uniform(1000000, 10000000),
-                'market_cap': new_price * random.uniform(18000000, 21000000)
+                'market_cap': updated_price * random.uniform(18000000, 21000000)
             }
-            self.last_prices[coin] = new_price
+            self.last_prices[coin_symbol] = updated_price
         
-        return prices
+        return simulated_prices
 
 crypto_provider = EnhancedCryptoProvider()
 
@@ -375,25 +375,25 @@ def get_bot_performance(bot_id):
 @app.route('/api/wallet/withdraw/paypal', methods=['POST'])
 def withdraw_paypal():
     """Process PayPal withdrawal"""
-    data = request.get_json()
-    email = data.get('email')
-    amount = data.get('amount', 100)
+    withdrawal_request_data = request.get_json()
+    recipient_email = withdrawal_request_data.get('email')
+    withdrawal_amount = withdrawal_request_data.get('amount', 100)
     
-    if not email:
+    if not recipient_email:
         return jsonify({'success': False, 'error': 'Email required for PayPal withdrawal'}), 400
     
     # Create PayPal payout
-    payout_result = create_paypal_payout(email, amount)
+    payout_result = create_paypal_payout(recipient_email, withdrawal_amount)
     
     if payout_result['success']:
         return jsonify({
             'success': True,
             'payout_batch_id': payout_result['payout_batch_id'],
             'status': payout_result['status'],
-            'amount': amount,
-            'email': email,
+            'amount': withdrawal_amount,
+            'email': recipient_email,
             'processing_time': '1-3 business days',
-            'message': f'PayPal payout of ${amount} initiated to {email}'
+            'message': f'PayPal payout of ${withdrawal_amount} initiated to {recipient_email}'
         })
     else:
         return jsonify({
@@ -404,18 +404,18 @@ def withdraw_paypal():
 @app.route('/api/wallet/withdraw', methods=['POST'])
 def withdraw():
     """Process regular cryptocurrency withdrawal"""
-    data = request.get_json()
-    currency = data.get('currency', 'BTC')
-    amount = data.get('amount', 0.1)
+    withdrawal_request_data = request.get_json()
+    withdrawal_currency = withdrawal_request_data.get('currency', 'BTC')
+    withdrawal_amount = withdrawal_request_data.get('amount', 0.1)
     
-    bank_transfer_id = f'BANK_{random.randint(1000000, 9999999)}'
+    bank_transfer_transaction_id = f'BANK_{random.randint(1000000, 9999999)}'
     
     return jsonify({
         'success': True,
-        'transaction_id': bank_transfer_id,
+        'transaction_id': bank_transfer_transaction_id,
         'processing_time': '1-3 business days',
-        'transaction_fee': round(amount * 0.001, 6),
-        'currency': currency,
+        'transaction_fee': round(withdrawal_amount * 0.001, 6),
+        'currency': withdrawal_currency,
         'bank_account': '****1234',
         'withdrawal_type': 'Bank Transfer',
         'estimated_arrival': 'Within 72 hours'
@@ -424,10 +424,10 @@ def withdraw():
 @app.route('/api/wallet/deposit', methods=['POST'])
 def deposit():
     """Generate deposit address"""
-    data = request.get_json()
-    currency = data.get('currency', 'BTC')
+    deposit_request_data = request.get_json()
+    deposit_currency = deposit_request_data.get('currency', 'BTC')
     
-    addresses = {
+    currency_deposit_addresses = {
         'BTC': f'bc1q{random.randint(100000000000000, 999999999999999)}',
         'ETH': f'0x{random.randint(100000000000000000000000000000000000000, 999999999999999999999999999999999999999):040x}',
         'BNB': f'bnb{random.randint(100000000000000, 999999999999999)}'
@@ -435,9 +435,9 @@ def deposit():
     
     return jsonify({
         'success': True,
-        'deposit_address': addresses.get(currency, addresses['BTC']),
+        'deposit_address': currency_deposit_addresses.get(deposit_currency, currency_deposit_addresses['BTC']),
         'network': 'Mainnet',
-        'minimum_deposit': 0.001 if currency == 'BTC' else (0.01 if currency == 'ETH' else 0.1),
+        'minimum_deposit': 0.001 if deposit_currency == 'BTC' else (0.01 if deposit_currency == 'ETH' else 0.1),
         'estimated_confirmation_time': '10-30 minutes'
     })
 

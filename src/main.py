@@ -185,7 +185,7 @@ class GamificationEngine:
         if not game_state.spin_wheel_available:
             return {'error': 'Spin wheel not available. Try again in 24 hours.'}
         
-        rewards = [
+        available_rewards = [
             {'type': 'cash', 'amount': 50, 'probability': 0.3},
             {'type': 'cash', 'amount': 100, 'probability': 0.2},
             {'type': 'cash', 'amount': 250, 'probability': 0.1},
@@ -195,18 +195,18 @@ class GamificationEngine:
         ]
         
         # Select reward based on probability
-        rand = random.random()
-        cumulative_prob = 0
+        random_value = random.random()
+        cumulative_probability = 0
         selected_reward = None
         
-        for reward in rewards:
-            cumulative_prob += reward['probability']
-            if rand <= cumulative_prob:
-                selected_reward = reward
+        for reward_option in available_rewards:
+            cumulative_probability += reward_option['probability']
+            if random_value <= cumulative_probability:
+                selected_reward = reward_option
                 break
         
         if not selected_reward:
-            selected_reward = rewards[0]  # Fallback
+            selected_reward = available_rewards[0]  # Fallback
         
         # Apply reward
         if selected_reward['type'] == 'cash':
@@ -235,18 +235,18 @@ class GamificationEngine:
         game_state.scratch_cards_available -= 1
         
         # Random reward
-        rewards = [25, 50, 75, 100, 150, 200]
-        reward_amount = random.choice(rewards)
+        possible_reward_amounts = [25, 50, 75, 100, 150, 200]
+        selected_reward_amount = random.choice(possible_reward_amounts)
         
-        game_state.add_profit(reward_amount)
-        level_up = game_state.add_xp(50)
+        game_state.add_profit(selected_reward_amount)
+        did_level_up = game_state.add_xp(50)
         
         return {
             'success': True,
-            'reward_amount': reward_amount,
+            'reward_amount': selected_reward_amount,
             'cards_remaining': game_state.scratch_cards_available,
             'new_portfolio_value': game_state.portfolio_value,
-            'level_up': level_up
+            'level_up': did_level_up
         }
 
 gamification = GamificationEngine()
@@ -345,22 +345,22 @@ def toggle_bot(bot_id):
 
 @app.route('/api/paypal/withdraw', methods=['POST'])
 def paypal_withdraw():
-    data = request.get_json()
-    email = data.get('email')
-    amount = float(data.get('amount', 0))
+    withdrawal_request_data = request.get_json()
+    recipient_email = withdrawal_request_data.get('email')
+    withdrawal_amount = float(withdrawal_request_data.get('amount', 0))
     
-    if not email or amount <= 0:
+    if not recipient_email or withdrawal_amount <= 0:
         return jsonify({'error': 'Invalid email or amount'}), 400
     
-    if amount > game_state.portfolio_value:
+    if withdrawal_amount > game_state.portfolio_value:
         return jsonify({'error': 'Insufficient funds'}), 400
     
     # Process PayPal payout
-    payout_result = paypal.create_payout(email, amount)
+    payout_result = paypal.create_payout(recipient_email, withdrawal_amount)
     
     if payout_result.get('status') == 'SUCCESS':
         # Deduct from portfolio
-        game_state.portfolio_value -= amount
+        game_state.portfolio_value -= withdrawal_amount
         
         # Add XP for withdrawal
         game_state.add_xp(100)
@@ -368,8 +368,8 @@ def paypal_withdraw():
         return jsonify({
             'success': True,
             'payout_id': payout_result['payout_batch_id'],
-            'amount': amount,
-            'recipient': email,
+            'amount': withdrawal_amount,
+            'recipient': recipient_email,
             'processing_time': payout_result['processing_time'],
             'transaction_fee': payout_result['transaction_fee'],
             'net_amount': payout_result['net_amount'],
@@ -393,16 +393,16 @@ def daily_bonus():
     if game_state.daily_bonus_claimed:
         return jsonify({'error': 'Daily bonus already claimed'})
     
-    bonus_amount = random.randint(50, 200)
-    game_state.add_profit(bonus_amount)
-    level_up = game_state.add_xp(100)
+    random_bonus_amount = random.randint(50, 200)
+    game_state.add_profit(random_bonus_amount)
+    did_level_up = game_state.add_xp(100)
     game_state.daily_bonus_claimed = True
     
     return jsonify({
         'success': True,
-        'bonus_amount': bonus_amount,
+        'bonus_amount': random_bonus_amount,
         'new_portfolio_value': game_state.portfolio_value,
-        'level_up': level_up
+        'level_up': did_level_up
     })
 
 @app.route('/api/gamification/status')
@@ -435,27 +435,27 @@ def trading_simulation():
     """Simulate continuous trading activity"""
     while True:
         try:
-            market_data = get_market_data()
+            current_market_data = get_market_data()
             
             # Execute trades for active bots
-            for bot in bots.values():
-                if bot.is_active and random.random() < 0.3:  # 30% chance per cycle
-                    trade_result = bot.execute_trade(market_data)
-                    if trade_result:
+            for trading_bot in bots.values():
+                if trading_bot.is_active and random.random() < 0.3:  # 30% chance per cycle
+                    executed_trade_result = trading_bot.execute_trade(current_market_data)
+                    if executed_trade_result:
                         # Emit trade notification
-                        socketio.emit('trade_executed', trade_result)
+                        socketio.emit('trade_executed', executed_trade_result)
             
             # Emit updated dashboard data
-            dashboard_update = {
+            dashboard_update_data = {
                 'portfolio_value': game_state.portfolio_value,
                 'daily_profit': game_state.daily_profit,
-                'market_data': market_data,
+                'market_data': current_market_data,
                 'timestamp': datetime.now().isoformat()
             }
-            socketio.emit('dashboard_update', dashboard_update)
+            socketio.emit('dashboard_update', dashboard_update_data)
             
-        except Exception as e:
-            logger.error(f"Trading simulation error: {e}")
+        except Exception as simulation_error:
+            logger.error(f"Trading simulation error: {simulation_error}")
         
         time.sleep(30)  # Update every 30 seconds
 
@@ -463,21 +463,21 @@ def reset_daily_limits():
     """Reset daily limits and bonuses"""
     while True:
         try:
-            now = datetime.now()
-            if now.hour == 0 and now.minute == 0:  # Midnight reset
+            current_time = datetime.now()
+            if current_time.hour == 0 and current_time.minute == 0:  # Midnight reset
                 game_state.daily_bonus_claimed = False
                 game_state.scratch_cards_available = 3
                 game_state.spin_wheel_available = True
                 
                 # Reset bot daily stats
-                for bot in bots.values():
-                    bot.trades_today = 0
-                    bot.profit_today = 0.0
+                for trading_bot in bots.values():
+                    trading_bot.trades_today = 0
+                    trading_bot.profit_today = 0.0
                 
                 logger.info("Daily limits reset")
                 
-        except Exception as e:
-            logger.error(f"Daily reset error: {e}")
+        except Exception as reset_error:
+            logger.error(f"Daily reset error: {reset_error}")
         
         time.sleep(60)  # Check every minute
 
